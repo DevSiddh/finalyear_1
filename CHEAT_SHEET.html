@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AlgoTrade AI — Viva Cheat Sheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', Arial, sans-serif;
+    background: #fff;
+    color: #111;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  /* ── PRINT: 2 pages ── */
+  @media print {
+    .page { page-break-after: always; }
+    .page:last-child { page-break-after: avoid; }
+    body { font-size: 10px; }
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 10mm 12mm;
+    margin: 0 auto 20px;
+    border: 1px solid #ddd;
+  }
+
+  /* header */
+  .page-header {
+    background: #0d1b2a;
+    color: #00e676;
+    padding: 8px 14px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .page-header h1 { font-size: 15px; font-weight: 700; color: #00e676; }
+  .page-header span { font-size: 10px; color: #aaa; }
+
+  /* section title */
+  .sec {
+    background: #0d1b2a;
+    color: #00e676;
+    font-weight: 700;
+    font-size: 10.5px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin: 8px 0 5px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* Q&A block */
+  .qa { margin-bottom: 7px; border-left: 3px solid #00e676; padding-left: 8px; }
+  .q  { font-weight: 700; color: #0d1b2a; font-size: 11px; margin-bottom: 2px; }
+  .a  { color: #222; font-size: 10.5px; }
+  .a b { color: #0d1b2a; }
+
+  /* 2-col grid */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+
+  /* metric card */
+  .card {
+    border: 1.5px solid #00e676;
+    border-radius: 6px;
+    padding: 6px 8px;
+    background: #f7fff9;
+  }
+  .card .label { font-weight: 700; font-size: 10.5px; color: #0d1b2a; }
+  .card .val   { color: #1b7a3e; font-weight: 700; font-size: 12px; }
+  .card .desc  { color: #444; font-size: 9.5px; margin-top: 2px; }
+
+  /* indicator table */
+  table { width: 100%; border-collapse: collapse; font-size: 9.5px; }
+  th { background: #0d1b2a; color: #00e676; padding: 3px 6px; text-align: left; }
+  td { padding: 2.5px 6px; border-bottom: 1px solid #eee; }
+  tr:nth-child(even) td { background: #f5f5f5; }
+
+  /* flow steps */
+  .flow { display: flex; gap: 0; flex-wrap: wrap; }
+  .step {
+    background: #0d1b2a; color: #fff;
+    padding: 4px 8px; font-size: 9.5px;
+    border-right: 2px solid #00e676;
+    flex: 1; min-width: 70px;
+  }
+  .step .num { color: #00e676; font-weight: 700; font-size: 11px; }
+  .step:last-child { border-right: none; }
+
+  /* highlight box */
+  .box {
+    border: 1.5px solid #ffd700;
+    border-radius: 5px;
+    background: #fffde7;
+    padding: 6px 10px;
+    margin: 6px 0;
+    font-size: 10.5px;
+  }
+  .box b { color: #7a5c00; }
+
+  /* script block */
+  .script {
+    background: #f0f8ff;
+    border-left: 4px solid #0077b6;
+    padding: 7px 10px;
+    border-radius: 0 5px 5px 0;
+    font-size: 10.5px;
+    color: #112;
+    margin-bottom: 7px;
+  }
+  .script .timing {
+    font-size: 9px;
+    color: #0077b6;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .divider { border: none; border-top: 1.5px solid #e0e0e0; margin: 8px 0; }
+
+  .tag {
+    display: inline-block;
+    background: #0d1b2a;
+    color: #00e676;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-weight: 700;
+    margin-right: 4px;
+  }
+  .warn { color: #c0392b; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE 1 — 3-MIN SCRIPT + KEY Q&A
+     ══════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <div class="page-header">
+    <h1>📊 AlgoTrade AI — Viva Cheat Sheet &nbsp; PAGE 1 / 2</h1>
+    <span>Print · Keep beside you · Do not read word-for-word — use as anchor</span>
+  </div>
+
+  <!-- 3-MIN SCRIPT -->
+  <div class="sec">🎤 3-Minute Opening Script (speak naturally — don't read)</div>
+
+  <div class="script">
+    <div class="timing">0:00 – 0:30 &nbsp;|&nbsp; Hook + Problem</div>
+    "Good [morning/afternoon]. My project is <b>AlgoTrade AI</b> — a FinTech system that uses
+    Artificial Intelligence to automate cryptocurrency trading decisions.
+    The problem: most retail investors lose money in crypto not because data doesn't exist —
+    but because there is <b>too much data for a human to process</b>, and emotions override logic.
+    Our system removes both problems."
+  </div>
+
+  <div class="script">
+    <div class="timing">0:30 – 1:15 &nbsp;|&nbsp; Gap + Approach</div>
+    "We identified three gaps in existing tools.
+    One — most trading tools show charts but <b>cannot predict future direction</b>.
+    Two — academic research exists but has <b>no practical interface</b>.
+    Three — no tool combines multiple AI models with <b>realistic backtesting including transaction costs</b>.
+    Our solution: download live crypto data → compute 11 technical indicators → train
+    3 AI models → generate Buy/Sell/Hold signals → backtest on real history."
+  </div>
+
+  <div class="script">
+    <div class="timing">1:15 – 2:00 &nbsp;|&nbsp; Models + Why</div>
+    "We chose three models deliberately — they represent <b>three different ML families</b>.
+    XGBoost is gradient boosting — best for structured financial data.
+    Random Forest is an ensemble — robust, rarely overfits.
+    LSTM is deep learning with memory — it learns patterns <b>across time</b>, not just snapshots.
+    Our key evaluation metric is <b>Direction Accuracy</b> —
+    did the AI correctly predict UP or DOWN?
+    50% is a random coin flip. Our models achieve above 55% — the AI is genuinely learning."
+  </div>
+
+  <div class="script">
+    <div class="timing">2:00 – 2:45 &nbsp;|&nbsp; Backtest + Results</div>
+    "Once signals are generated, we run a backtest — simulating what would have happened
+    following those signals on real historical data.
+    Critically, we include <b>0.1% transaction cost per trade</b> — most projects ignore this.
+    We measure Sharpe Ratio (return per unit of risk — above 1.0 is good),
+    Maximum Drawdown (worst loss period), and Win Rate (% of profitable trades).
+    We compare our strategy against simply buying and holding —
+    the standard industry baseline."
+  </div>
+
+  <div class="script">
+    <div class="timing">2:45 – 3:00 &nbsp;|&nbsp; Close</div>
+    "The system is deployed as a live web app that fetches real-time crypto prices
+    and gives a Buy/Sell/Hold recommendation that refreshes every 5 minutes.
+    Thank you — I'm happy to take questions."
+  </div>
+
+  <hr class="divider">
+
+  <!-- HARDEST Q&A -->
+  <div class="sec">🔥 Hardest Questions — Concise Answers</div>
+  <div class="grid2">
+
+    <div class="qa">
+      <div class="q">Q: Why this project specifically?</div>
+      <div class="a">Crypto trading is a <b>₹multi-trillion market</b> where 80% of retail traders lose money due to emotion and information overload. AI removes both. Crypto also trades 24/7 — no market hours — making it ideal for ML (more data).</div>
+    </div>
+
+    <div class="qa">
+      <div class="q">Q: Why XGBoost/RF/LSTM — not better models?</div>
+      <div class="a">These <b>ARE</b> state-of-the-art for tabular time-series. XGBoost wins most financial ML benchmarks. Transformers/GPT need 10× more data and compute — overkill for this scope. We cover all 3 ML families deliberately.</div>
+    </div>
+
+    <div class="qa">
+      <div class="q">Q: What's unique about your approach?</div>
+      <div class="a">1) Predict <b>returns</b> not price (statistically correct). 2) Include <b>transaction costs</b> in backtest (most don't). 3) Long <b>AND</b> Short positions. 4) Time-aware split (no data leakage). 5) Live signal on app load.</div>
+    </div>
+
+    <div class="qa">
+      <div class="q">Q: Your accuracy doesn't look high — why?</div>
+      <div class="a">We predict <b>daily returns</b> — extremely noisy data. In financial ML, <b>55%+ direction accuracy is considered strong</b> and profitable. Even hedge funds rarely exceed 60%. 50% = coin flip. We beat that consistently.</div>
+    </div>
+
+    <div class="qa">
+      <div class="q">Q: Why these 11 indicators?</div>
+      <div class="a">Based on the base research paper (Entropy 2020). They cover all 4 signal categories: <b>trend</b> (SMA, WMA), <b>momentum</b> (RSI, MOM, MACD), <b>oscillator</b> (Stochastic, Williams %R, CCI), <b>volume</b> (A/D Line). Validated by XGBoost feature importance.</div>
+    </div>
+
+    <div class="qa">
+      <div class="q">Q: Why 14 days for most indicators?</div>
+      <div class="a">Industry standard established by <b>J. Welles Wilder</b> (RSI inventor) in 1978. Balances sensitivity (too short = noise) vs lag (too long = misses moves). Used by Bloomberg, Reuters, all major trading platforms.</div>
+    </div>
+
+    <div class="qa">
+      <div class="q">Q: Calendar goes to 2015 but memory is 1–60 days — why?</div>
+      <div class="a"><b>Completely different parameters.</b> Date range = training dataset size (years of learning). Sequence length = context window per prediction (lines read before answering). Like: study 10 years of textbooks, read last 10 lines before each answer.</div>
+    </div>
+
+    <div class="qa">
+      <div class="q">Q: Is your backtest realistic?</div>
+      <div class="a">Yes — three reasons. 1) <b>Time-aware split</b>: test data is always the most recent 20% (never shuffled). 2) <b>0.1% transaction cost</b> per trade entry. 3) Both <b>Long and Short</b> positions. Most academic backtests skip all three.</div>
+    </div>
+
+  </div>
+
+</div><!-- end page 1 -->
+
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE 2 — METRICS + INDICATORS + PARAMETERS
+     ══════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <div class="page-header">
+    <h1>📊 AlgoTrade AI — Viva Cheat Sheet &nbsp; PAGE 2 / 2</h1>
+    <span>Metrics · Indicators · Parameters · Graph · Radar Chart</span>
+  </div>
+
+  <!-- METRICS -->
+  <div class="sec">📏 Metrics — What Every Number Means</div>
+  <div class="grid3">
+    <div class="card">
+      <div class="label">RMSE</div>
+      <div class="val">Lower = better</div>
+      <div class="desc">Average prediction error. Targets are daily returns (tiny decimals like 0.002), so RMSE of 0.000X is normal and expected.</div>
+    </div>
+    <div class="card">
+      <div class="label">Direction Accuracy (DA)</div>
+      <div class="val">&gt;55% = good</div>
+      <div class="desc">% of days AI predicted UP/DOWN correctly. <b>50% = coin flip.</b> Most important metric for trading. We don't need exact price — just direction.</div>
+    </div>
+    <div class="card">
+      <div class="label">Sharpe Ratio</div>
+      <div class="val">&gt;1.0 = good</div>
+      <div class="desc">Return ÷ Risk, annualised × √365 (crypto = 365 days). Like salary-to-stress ratio. &gt;2 = excellent. Used by every professional fund.</div>
+    </div>
+    <div class="card">
+      <div class="label">Max Drawdown</div>
+      <div class="val">Lower = safer</div>
+      <div class="desc">Worst peak-to-trough drop. If portfolio hit ₹15k then fell to ₹9k — drawdown = 40%. Professional target: &lt;20%.</div>
+    </div>
+    <div class="card">
+      <div class="label">Win Rate</div>
+      <div class="val">&gt;50% = useful</div>
+      <div class="desc">% of active trades (signal ≠ HOLD) that were profitable. Only counts when AI actually took a position — not Hold days.</div>
+    </div>
+    <div class="card">
+      <div class="label">Why not MAPE?</div>
+      <div class="val">Division by zero</div>
+      <div class="desc">MAPE divides by actual value. Daily returns near zero → division by ~0 → infinite/meaningless output. DA is more honest.</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PIPELINE -->
+  <div class="sec">⚙️ System Pipeline (say this when asked "explain your architecture")</div>
+  <div class="flow">
+    <div class="step"><div class="num">1</div>Yahoo Finance API<br>OHLCV data download</div>
+    <div class="step"><div class="num">2</div>11 Technical<br>Indicators computed</div>
+    <div class="step"><div class="num">3</div>Supervised dataset<br>target = next-day return</div>
+    <div class="step"><div class="num">4</div>MinMax<br>Normalisation [0,1]</div>
+    <div class="step"><div class="num">5</div>Train/Val/Test<br>72% / 8% / 20%</div>
+    <div class="step"><div class="num">6</div>Train 3 Models<br>XGB · RF · LSTM</div>
+    <div class="step"><div class="num">7</div>Signal: BUY/SELL/<br>HOLD ±0.1% band</div>
+    <div class="step"><div class="num">8</div>Backtest<br>− 0.1% per trade</div>
+    <div class="step"><div class="num">9</div>Streamlit<br>Live Dashboard</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- INDICATORS TABLE -->
+  <div class="sec">📐 11 Technical Indicators — Quick Reference</div>
+  <div class="grid2">
+    <table>
+      <tr><th>Indicator</th><th>Measures</th><th>Category</th></tr>
+      <tr><td>SMA 14</td><td>14-day average price</td><td>Trend</td></tr>
+      <tr><td>WMA 14</td><td>Recent days weighted more</td><td>Trend</td></tr>
+      <tr><td>Momentum 14</td><td>Price now − 14 days ago</td><td>Momentum</td></tr>
+      <tr><td>Stochastic %K</td><td>Today vs 14-day range</td><td>Oscillator</td></tr>
+      <tr><td>Stochastic %D</td><td>3-day smooth of %K</td><td>Oscillator</td></tr>
+      <tr><td>RSI 14</td><td>Strength of trend</td><td>Momentum</td></tr>
+    </table>
+    <table>
+      <tr><th>Indicator</th><th>Measures</th><th>Category</th></tr>
+      <tr><td>MACD</td><td>EMA(12) − EMA(26)</td><td>Trend/Momentum</td></tr>
+      <tr><td>MACD Signal</td><td>9-day EMA of MACD</td><td>Trend/Momentum</td></tr>
+      <tr><td>Williams %R</td><td>Momentum oscillator</td><td>Oscillator</td></tr>
+      <tr><td>A/D Line</td><td>Volume money flow</td><td>Volume</td></tr>
+      <tr><td>CCI 20</td><td>Deviation from avg</td><td>Oscillator</td></tr>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PARAMETERS + GRAPH + RADAR -->
+  <div class="grid2">
+
+    <div>
+      <div class="sec">🔢 Why These Parameter Values?</div>
+      <table>
+        <tr><th>Parameter</th><th>Value</th><th>Why</th></tr>
+        <tr><td>n_estimators</td><td>200</td><td>Below 100 = underfits. Above 500 = slow + diminishing returns</td></tr>
+        <tr><td>LSTM window</td><td>10 days</td><td>Research-validated sweet spot for short-term momentum</td></tr>
+        <tr><td>Signal threshold</td><td>±0.1%</td><td>Filters noise smaller than transaction cost (0.1%)</td></tr>
+        <tr><td>Test split</td><td>20%</td><td>Industry standard. Last 20% = most recent dates = honest eval</td></tr>
+        <tr><td>Transaction cost</td><td>0.1%</td><td>Binance/crypto exchange standard fee per trade</td></tr>
+        <tr><td>Sharpe × √365</td><td>√365</td><td>Crypto trades every day (not √252 like stocks)</td></tr>
+      </table>
+    </div>
+
+    <div>
+      <div class="sec">💹 Graph + 🕸️ Radar — How to Explain</div>
+      <div class="qa">
+        <div class="q">Cumulative Returns Graph:</div>
+        <div class="a"><span class="tag">Gray dash</span> = buy on day 1, do nothing (baseline)<br>
+        <span class="tag">Green</span> = follow AI signals every day<br>
+        Value 1.5 = grew to 1.5× original (+50%). Break-even = 1.0.<br>
+        <b>Green above gray = AI beats passive holding.</b></div>
+      </div>
+      <div class="qa" style="margin-top:6px;">
+        <div class="q">Radar / Spider Chart:</div>
+        <div class="a">Each corner = one performance dimension.<br>
+        <b>Bigger area = stronger model overall.</b><br>
+        4 axes: Direction Accuracy · Win Rate · Sharpe Score · Low Error<br>
+        Say: <i>"This compares all 3 models across 4 dimensions simultaneously —
+        a model with large area is consistently strong, not just good at one thing."</i></div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider">
+
+  <!-- EMERGENCY BOX -->
+  <div class="box">
+    <b>⚠️ If you go blank on any question — buy time with:</b><br>
+    <i>"That's a great point sir — the key thing to note here is that
+    [repeat last thing you said more slowly]. In our implementation specifically, [continue]."</i>
+    &nbsp;&nbsp;&nbsp;
+    <b>Never say "I don't know" — say "We considered that and chose X because Y."</b>
+  </div>
+
+  <div class="box" style="border-color:#00e676; background:#f0fff4; margin-top:4px;">
+    <b>✅ Closing line if asked "What would you improve?":</b><br>
+    <i>"We would add a Transformer-based model for longer-range patterns,
+    integrate real-time news sentiment analysis, and extend to multi-asset portfolio optimization
+    rather than single-coin trading. We also want to connect to a paper trading API
+    so signals execute automatically in a simulated account."</i>
+  </div>
+
+</div><!-- end page 2 -->
+
+</body>
+</html>
