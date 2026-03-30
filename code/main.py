@@ -86,11 +86,7 @@ def load_local_csv(path):
     df = pd.read_csv(path, parse_dates=True, index_col=0)
     return df
 
-# Example: use AAPL for demo
-if __name__ == '__main__':
-    print('\nData ingestion demo: download AAPL (2015-01-01 to present)')
-    demo_df = download_yahoo('AAPL', start='2015-01-01')
-    print(demo_df.tail())
+# Example: download_yahoo('BTC-USD', start='2018-01-01')
 
 # -----------------------------
 # 3) TECHNICAL INDICATORS
@@ -216,8 +212,10 @@ def metrics(y_true, y_pred):
     mae = mean_absolute_error(y_true, y_pred)
     mse = mean_squared_error(y_true, y_pred)
     rmse = np.sqrt(mse)
-    mape = np.mean(np.abs((y_true - y_pred)/(y_true + 1e-9))) * 100
-    return {'MAE': mae, 'MSE': mse, 'RMSE': rmse, 'MAPE': mape}
+    # Directional Accuracy: % of times model predicted correct direction (up/down)
+    # Much more meaningful than MAPE when targets are near-zero returns
+    directional_acc = np.mean(np.sign(y_true) == np.sign(y_pred)) * 100
+    return {'MAE': mae, 'MSE': mse, 'RMSE': rmse, 'DA': directional_acc}
 
 
 def train_xgb(X_train, y_train, X_test, y_test):
@@ -264,26 +262,72 @@ def train_lstm(X_train, y_train, X_val, y_val, X_test, y_test, epochs=50, batch_
 # 6) BACKTEST (simple): signals from predicted next-day price
 # -----------------------------
 
-def simple_backtest(df_with_preds, pred_col='pred', threshold=0.0):
+def simple_backtest(df_with_preds, pred_col='pred', threshold=0.001):
     """
-    Backtest strategy where predictions are expected next-day returns.
-    threshold: minimum predicted return to take a position.
+    Backtest with Long, Short, and Hold signals.
+    
+    signal = +1  → predicted return >  +threshold  (Long / Buy)
+    signal = -1  → predicted return <  -threshold  (Short / Sell)
+    signal =  0  → within threshold band           (Hold / No trade)
+
+    transaction_cost = 0.1% per trade (realistic for crypto exchanges like Binance)
     """
+    TRANSACTION_COST = 0.001  # 0.1% per trade
+
     df = df_with_preds.copy()
+
+    # --- Signals ---
     df['signal'] = 0
-    df.loc[df[pred_col] > threshold, 'signal'] = 1  # Long if predicted return positive
+    df.loc[df[pred_col] >  threshold, 'signal'] =  1   # Long
+    df.loc[df[pred_col] < -threshold, 'signal'] = -1   # Short
+
+    # --- Actual next-day return ---
     df['asset_ret'] = df['Close'].pct_change().shift(-1)
+
+    # --- Strategy return = signal * actual return ---
     df['strategy_ret'] = df['signal'] * df['asset_ret']
+
+    # --- Deduct transaction cost on every trade entry ---
+    # A trade entry is when signal changes from previous row
+    df['trade_entry'] = (df['signal'] != df['signal'].shift(1)).astype(int)
+    df['strategy_ret'] = df['strategy_ret'] - (df['trade_entry'] * TRANSACTION_COST)
+
+    # --- Cumulative returns ---
     df['cum_strategy'] = (1 + df['strategy_ret'].fillna(0)).cumprod()
-    df['cum_asset'] = (1 + df['asset_ret'].fillna(0)).cumprod()
-    return df
+    df['cum_asset']    = (1 + df['asset_ret'].fillna(0)).cumprod()
+
+    # --- Sharpe Ratio (annualised, crypto = 365) ---
+    strat_rets = df['strategy_ret'].dropna()
+    sharpe = (strat_rets.mean() / (strat_rets.std() + 1e-9)) * np.sqrt(365)
+
+    # --- Max Drawdown ---
+    cum = df['cum_strategy']
+    drawdown = (cum - cum.cummax()) / (cum.cummax() + 1e-9)
+    max_drawdown = drawdown.min() * 100
+
+    # --- Win Rate (only on active trades, signal != 0) ---
+    active = df[df['signal'] != 0]['strategy_ret'].dropna()
+    win_rate = (active > 0).mean() * 100 if len(active) > 0 else 0.0
+
+    # --- Trade counts ---
+    long_trades  = int((df['signal'] ==  1).sum())
+    short_trades = int((df['signal'] == -1).sum())
+
+    return df, {
+        'sharpe':        round(sharpe, 3),
+        'max_drawdown':  round(max_drawdown, 2),
+        'win_rate':      round(win_rate, 2),
+        'long_trades':   long_trades,
+        'short_trades':  short_trades,
+        'total_trades':  long_trades + short_trades
+    }
 
 
 # -----------------------------
 # 7) END-TO-END DEMO PIPELINE (combines above)
 # -----------------------------
 
-def run_pipeline(ticker='AAPL', start='2015-01-01', window_size=10, test_size=0.2, val_frac=0.1):
+def run_pipeline(ticker='BTC-USD', start='2018-01-01', window_size=10, test_size=0.2, val_frac=0.1, model_choice='XGBoost'):
     print(f"Running pipeline for: {ticker}")
     df = download_yahoo(ticker, start=start)
     df_ind = add_indicators(df)
@@ -345,33 +389,53 @@ def run_pipeline(ticker='AAPL', start='2015-01-01', window_size=10, test_size=0.
     lstm_model.save('models/lstm_model.h5')
     print('Models saved to ./models/')
 
-    # For backtest we align preds to the original df_test index (simple: use X_test predictions from xgb)
-    df_test_orig_index = df_scaled.iloc[-len(X_test):].index
-    df_back = df_ind.loc[df_test_orig_index].copy()
-    df_back['pred'] = xgb_preds
+    # Route predictions based on model_choice
+    if model_choice == 'RandomForest':
+        chosen_preds = rf_preds
+        chosen_label = 'RandomForest'
+        # RF preds align with X_test (same length)
+        df_test_orig_index = df_scaled.iloc[-len(X_test):].index
+    elif model_choice == 'LSTM':
+        chosen_preds = lstm_preds
+        chosen_label = 'LSTM'
+        # LSTM test set is shorter due to windowing — align to last n rows
+        df_test_orig_index = df_scaled.iloc[-len(lstm_preds):].index
+    else:
+        chosen_preds = xgb_preds
+        chosen_label = 'XGBoost'
+        df_test_orig_index = df_scaled.iloc[-len(X_test):].index
 
-    back = simple_backtest(df_back, pred_col='pred')
+    df_back = df_ind.loc[df_test_orig_index].copy()
+    # Trim to match pred length (LSTM may differ slightly)
+    df_back = df_back.iloc[-len(chosen_preds):]
+    df_back['pred'] = chosen_preds
+
+    back, backtest_stats = simple_backtest(df_back, pred_col='pred')
 
     # Plot cumulative returns
     plt.figure(figsize=(10,6))
     plt.plot(back['cum_asset'], label='Hold Asset')
-    plt.plot(back['cum_strategy'], label='Strategy (XGBoost)')
+    plt.plot(back['cum_strategy'], label=f'Strategy ({chosen_label})')
     plt.legend()
-    plt.title(f'Cumulative returns: {ticker}')
+    plt.title(f'Cumulative returns: {ticker} [{chosen_label}]')
     plt.show()
 
     return {
         'xgb_metrics': xgb_metrics,
         'rf_metrics': rf_metrics,
         'lstm_metrics': lstm_metrics,
-        'backtest_df': back
+        'backtest_df': back,
+        'backtest_stats': backtest_stats,
+        'chosen_label': chosen_label
     }
 
 # -----------------------------
 # 8) RUN DEMO when executed directly
 # -----------------------------
 if __name__ == '__main__':
-    out = run_pipeline(ticker='AAPL', start='2015-01-01')
+    out = run_pipeline(ticker='BTC-USD', start='2018-01-01')
     print('\nBacktest head:')
     print(out['backtest_df'][['Close','pred','signal','strategy_ret','cum_strategy']].tail())
+    print('\nBacktest stats:')
+    print(out['backtest_stats'])
 

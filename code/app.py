@@ -1,10 +1,7 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from datetime import date
-import joblib
-import os
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -25,16 +22,16 @@ st.set_page_config(
 st.sidebar.title("⚙️ Configuration")
 st.sidebar.markdown("### Select Parameters")
 
-ticker = st.sidebar.text_input("Stock Symbol (Yahoo Finance)", value="AAPL")
-start_date = st.sidebar.date_input("Start Date", value=date(2015, 1, 1))
+ticker = st.sidebar.text_input("Crypto Symbol (Yahoo Finance)", value="BTC-USD")
+start_date = st.sidebar.date_input("Start Date", value=date(2018, 1, 1))
 window_size = st.sidebar.slider("LSTM Window Size", 5, 30, 10)
 model_choice = st.sidebar.selectbox("Model for Prediction", ["XGBoost", "RandomForest", "LSTM"])
 run_button = st.sidebar.button("🚀 Run Pipeline")
 
 st.sidebar.markdown("---")
 st.sidebar.info(
-    "📘 **Tip:** Use a Yahoo Finance ticker like `AAPL`, `MSFT`, or `GOOG`.\n"
-    "Model will train & backtest automatically."
+    "📘 **Tip:** Use crypto tickers like `BTC-USD`, `ETH-USD`, `SOL-USD`, `BNB-USD`.\n\n"
+    "Crypto trades 24/7 — perfect for live demos. Model retrains fresh every run."
 )
 
 # -----------------------------
@@ -42,10 +39,10 @@ st.sidebar.info(
 # -----------------------------
 st.title("📊 AlgoTrade AI — MarketPulse Optimizer")
 st.markdown("""
-A **FinTech AI System** that uses Machine Learning to analyze stock market trends, 
-compute technical indicators, and simulate trading strategies.
+A **FinTech AI System** that uses Machine Learning to analyze **cryptocurrency market trends**, 
+compute technical indicators, and simulate algorithmic trading strategies.
 
-Built with 🧠 XGBoost, 🌲 RandomForest, and 🔁 LSTM Deep Learning.
+Built with 🧠 XGBoost, 🌲 RandomForest, and 🔁 LSTM Deep Learning — trained on live crypto data.
 """)
 
 # -----------------------------
@@ -53,7 +50,7 @@ Built with 🧠 XGBoost, 🌲 RandomForest, and 🔁 LSTM Deep Learning.
 # -----------------------------
 if run_button:
     with st.spinner("⏳ Running end-to-end pipeline... please wait (this may take a few minutes)"):
-        output = run_pipeline(ticker=ticker, start=str(start_date), window_size=window_size)
+        output = run_pipeline(ticker=ticker, start=str(start_date), window_size=window_size, model_choice=model_choice)
 
     # Display model metrics
     st.success(f"✅ Completed pipeline for `{ticker}`")
@@ -63,15 +60,28 @@ if run_button:
 
     with col1:
         st.metric("XGBoost RMSE", round(output["xgb_metrics"]["RMSE"], 6))
-        st.metric("XGBoost MAPE", f"{output['xgb_metrics']['MAPE']:.3f}%")
+        st.metric("XGBoost Directional Acc", f"{output['xgb_metrics']['DA']:.2f}%")
 
     with col2:
         st.metric("RandomForest RMSE", round(output["rf_metrics"]["RMSE"], 6))
-        st.metric("RandomForest MAPE", f"{output['rf_metrics']['MAPE']:.3f}%")
+        st.metric("RandomForest Directional Acc", f"{output['rf_metrics']['DA']:.2f}%")
 
     with col3:
         st.metric("LSTM RMSE", round(output["lstm_metrics"]["RMSE"], 6))
-        st.metric("LSTM MAPE", f"{output['lstm_metrics']['MAPE']:.3f}%")
+        st.metric("LSTM Directional Acc", f"{output['lstm_metrics']['DA']:.2f}%")
+
+    # -----------------------------
+    # Backtest Stats
+    # -----------------------------
+    st.subheader("📊 Backtest Statistics")
+    stats = output["backtest_stats"]
+    sc1, sc2, sc3, sc4, sc5, sc6 = st.columns(6)
+    sc1.metric("Sharpe Ratio",  stats["sharpe"],                help="Annualised. >1 is good, >2 is great.")
+    sc2.metric("Max Drawdown",  f"{stats['max_drawdown']}%",    help="Worst peak-to-trough drop.")
+    sc3.metric("Win Rate",      f"{stats['win_rate']}%",        help="% of active trades that were profitable.")
+    sc4.metric("Total Trades",  stats["total_trades"],          help="Long + Short trades combined.")
+    sc5.metric("Long  (Buy)",   stats["long_trades"],           help="Predicted return > +threshold → Long.")
+    sc6.metric("Short (Sell)",  stats["short_trades"],          help="Predicted return < -threshold → Short.")
 
     # -----------------------------
     # Cumulative Returns Plot
@@ -81,10 +91,10 @@ if run_button:
     back_df = output["backtest_df"]
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=back_df.index, y=back_df["cum_asset"], name="Buy & Hold", line=dict(color='gray', width=2)))
-    fig.add_trace(go.Scatter(x=back_df.index, y=back_df["cum_strategy"], name="Strategy (XGBoost)", line=dict(color='lime', width=2)))
+    fig.add_trace(go.Scatter(x=back_df.index, y=back_df["cum_strategy"], name=f"Strategy ({output['chosen_label']})", line=dict(color='lime', width=2)))
 
     fig.update_layout(
-        title=f"Cumulative Returns Comparison — {ticker}",
+        title=f"Cumulative Returns Comparison — {ticker} [{output['chosen_label']}]",
         xaxis_title="Date",
         yaxis_title="Cumulative Return",
         template="plotly_dark",
@@ -97,10 +107,9 @@ if run_button:
     # Show prediction table
     # -----------------------------
     st.subheader("📋 Recent Predictions & Signals")
-    st.dataframe(
-        back_df[['Close', 'pred', 'signal', 'strategy_ret', 'cum_strategy']].tail(10),
-        use_container_width=True
-    )
+    display_df = back_df[['Close', 'pred', 'signal', 'strategy_ret', 'cum_strategy']].tail(10).copy()
+    display_df['action'] = display_df['signal'].map({1: '🟢 Long', -1: '🔴 Short', 0: '⬜ Hold'})
+    st.dataframe(display_df, use_container_width=True)
 
     # -----------------------------
     # Download section
