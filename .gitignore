@@ -12,3 +12,8 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Trained model binaries (large files, regenerated on each run)
+models/
+*.h5
+*.pkl
