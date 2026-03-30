@@ -208,70 +208,90 @@ def add_text(slide, text, left, top, width, height, size=12, bold=False,
     run.font.italic = italic
     return txb
 
+# ── Layout constants — slide is 7.5 inches tall, 13.33 wide ──────────────────
+# Title: 0.0 – 0.5
+# Row 1 (data pipeline) center: 1.05
+# Split center:                 2.05
+# Models center:                3.05
+# Signal center:                4.1
+# Backtest center:              5.15
+# Dashboard:                    6.1 – 6.75
+# Bottom margin:                6.75 – 7.5  (0.75 inch breathing room)
+
+BOX_W, BOX_H = 1.82, 0.62
+
 # Title bar
-add_box(slide16, 0, 0, 13.33, 0.65, ACCENT)
+add_box(slide16, 0, 0, 13.33, 0.5, ACCENT)
 add_text(slide16, "System Architecture — AlgoTrade AI Pipeline",
-         0.2, 0.05, 12.9, 0.55, size=24, bold=True, color=BG_DARK)
+         0.2, 0.04, 12.9, 0.44, size=22, bold=True, color=BG_DARK)
 
 # Node definitions: (x_center, y_center, line1, line2, color)
 NODE_BG  = RGBColor(0x10, 0x28, 0x3C)
 nodes = [
-    # Row 1 — data pipeline (y=1.5)
-    (1.1,  1.55, "Yahoo Finance", "Live OHLCV Data",        RGBColor(0x00,0xB4,0xD8)),
-    (3.1,  1.55, "Data",          "Ingestion & Clean",       RGBColor(0x00,0x96,0xC7)),
-    (5.1,  1.55, "11 Technical",  "Indicators",              RGBColor(0x00,0x77,0xB6)),
-    (7.1,  1.55, "Supervised",    "Dataset (returns)",       RGBColor(0x02,0x3E,0x8A)),
-    (9.3,  1.55, "MinMax",        "Normalisation",           RGBColor(0x03,0x04,0x5E)),
-    # Row 2 — split + models (y=3.3)
-    (5.1,  3.3,  "Train/Val/Test","72% / 8% / 20%",          RGBColor(0x1B,0x43,0x32)),
-    (2.0,  4.9,  "XGBoost",       "n_est=200, depth=6",      RGBColor(0x00,0xE6,0x76)),
-    (5.1,  4.9,  "Random",        "Forest",                  RGBColor(0x00,0xC8,0x5A)),
-    (8.2,  4.9,  "LSTM",          "window=10, units=64",     RGBColor(0x00,0xAA,0x44)),
-    # Row 3 — signals + backtest + UI (y=6.2 etc)
-    (5.1,  6.2,  "Signal",        "BUY / SELL / HOLD",       RGBColor(0xFF,0x6D,0x00)),
-    (5.1,  7.4,  "Backtest",      "Sharpe · Drawdown · WR",  RGBColor(0xE6,0x39,0x46)),
+    # Row 1 — data pipeline y=1.05
+    (1.1,  1.05, "Yahoo Finance", "Live OHLCV Data",        RGBColor(0x00,0xB4,0xD8)),
+    (3.1,  1.05, "Data",          "Ingestion & Clean",       RGBColor(0x00,0x96,0xC7)),
+    (5.1,  1.05, "11 Technical",  "Indicators",              RGBColor(0x00,0x77,0xB6)),
+    (7.1,  1.05, "Supervised",    "Dataset (returns)",       RGBColor(0x02,0x3E,0x8A)),
+    (9.3,  1.05, "MinMax",        "Normalisation",           RGBColor(0x03,0x04,0x5E)),
+    # Row 2 — split y=2.05
+    (5.1,  2.05, "Train/Val/Test","72% / 8% / 20%",          RGBColor(0x1B,0x43,0x32)),
+    # Row 3 — models y=3.05
+    (2.0,  3.05, "XGBoost",       "n_est=200, depth=6",      RGBColor(0x00,0xE6,0x76)),
+    (5.1,  3.05, "Random",        "Forest",                  RGBColor(0x00,0xC8,0x5A)),
+    (8.2,  3.05, "LSTM",          "window=10, units=64",     RGBColor(0x00,0xAA,0x44)),
+    # Row 4 — signal y=4.1
+    (5.1,  4.1,  "Signal",        "BUY / SELL / HOLD",       RGBColor(0xFF,0x6D,0x00)),
+    # Row 5 — backtest y=5.15
+    (5.1,  5.15, "Backtest",      "Sharpe · Drawdown · WR",  RGBColor(0xE6,0x39,0x46)),
 ]
-
-BOX_W, BOX_H = 1.85, 0.72
 
 for (cx, cy, l1, l2, color) in nodes:
     lx = cx - BOX_W/2
     ly = cy - BOX_H/2
     add_box(slide16, lx, ly, BOX_W, BOX_H, NODE_BG, color, 1.5)
-    # top accent bar
-    add_box(slide16, lx, ly, BOX_W, 0.05, color)
-    add_text(slide16, l1, lx, ly+0.04, BOX_W, 0.32,
-             size=10.5, bold=True, color=color)
-    add_text(slide16, l2, lx, ly+0.35, BOX_W, 0.3,
-             size=9, color=LIGHT_GRAY)
+    add_box(slide16, lx, ly, BOX_W, 0.05, color)           # top accent strip
+    add_text(slide16, l1, lx, ly+0.05, BOX_W, 0.28,
+             size=10, bold=True, color=color)
+    add_text(slide16, l2, lx, ly+0.32, BOX_W, 0.26,
+             size=8.5, color=LIGHT_GRAY)
 
 # Dashboard box (full width at bottom)
-add_box(slide16, 0.3, 8.45, 12.73, 0.72, NODE_BG, RGBColor(0x9B,0x5D,0xE5), 1.5)
-add_box(slide16, 0.3, 8.45, 12.73, 0.05, RGBColor(0x9B,0x5D,0xE5))
+DASH_Y = 6.1
+add_box(slide16, 0.3, DASH_Y, 12.73, 0.62, NODE_BG, RGBColor(0x9B,0x5D,0xE5), 1.5)
+add_box(slide16, 0.3, DASH_Y, 12.73, 0.05, RGBColor(0x9B,0x5D,0xE5))
 add_text(slide16, "Streamlit Dashboard",
-         0.3, 8.49, 6.0, 0.32, size=11, bold=True, color=RGBColor(0x9B,0x5D,0xE5))
+         0.5, DASH_Y+0.05, 3.5, 0.28, size=10.5, bold=True,
+         color=RGBColor(0x9B,0x5D,0xE5), align=PP_ALIGN.LEFT)
 add_text(slide16,
-         "Live Signal  ·  Model Metrics  ·  Feature Importance  ·  "
-         "Radar Chart  ·  Cumulative Returns  ·  Investment Calculator",
-         0.3, 8.82, 12.73, 0.3, size=9, color=LIGHT_GRAY)
+         "Live Signal  ·  Metrics  ·  Feature Importance  ·  "
+         "Radar Chart  ·  Returns Graph  ·  Investment Calculator",
+         4.0, DASH_Y+0.05, 9.0, 0.28, size=9, color=LIGHT_GRAY,
+         align=PP_ALIGN.LEFT)
 
-# ── Arrows (right arrows in row 1) ───────────────────────────────────────────
+# ── Arrows ────────────────────────────────────────────────────────────────────
+R1Y  = 1.05
+R2Y  = 2.05
+R3Y  = 3.05
+R4Y  = 4.1
+R5Y  = 5.15
+
 arrow_pairs_h = [
-    (1.1+BOX_W/2, 1.55,  3.1-BOX_W/2, 1.55),
-    (3.1+BOX_W/2, 1.55,  5.1-BOX_W/2, 1.55),
-    (5.1+BOX_W/2, 1.55,  7.1-BOX_W/2, 1.55),
-    (7.1+BOX_W/2, 1.55,  9.3-BOX_W/2, 1.55),
+    (1.1+BOX_W/2, R1Y,  3.1-BOX_W/2, R1Y),
+    (3.1+BOX_W/2, R1Y,  5.1-BOX_W/2, R1Y),
+    (5.1+BOX_W/2, R1Y,  7.1-BOX_W/2, R1Y),
+    (7.1+BOX_W/2, R1Y,  9.3-BOX_W/2, R1Y),
 ]
 arrow_pairs_v = [
-    (9.3, 1.55+BOX_H/2, 5.1, 3.3-BOX_H/2),   # Normalise → Split
-    (5.1, 3.3+BOX_H/2,  2.0, 4.9-BOX_H/2),   # Split → XGB
-    (5.1, 3.3+BOX_H/2,  5.1, 4.9-BOX_H/2),   # Split → RF
-    (5.1, 3.3+BOX_H/2,  8.2, 4.9-BOX_H/2),   # Split → LSTM
-    (2.0, 4.9+BOX_H/2,  5.1, 6.2-BOX_H/2),   # XGB → Signal
-    (5.1, 4.9+BOX_H/2,  5.1, 6.2-BOX_H/2),   # RF → Signal
-    (8.2, 4.9+BOX_H/2,  5.1, 6.2-BOX_H/2),   # LSTM → Signal
-    (5.1, 6.2+BOX_H/2,  5.1, 7.4-BOX_H/2),   # Signal → Backtest
-    (5.1, 7.4+BOX_H/2,  5.1, 8.45),           # Backtest → Dashboard
+    (9.3, R1Y+BOX_H/2,  5.1, R2Y-BOX_H/2),   # Normalise → Split
+    (5.1, R2Y+BOX_H/2,  2.0, R3Y-BOX_H/2),   # Split → XGB
+    (5.1, R2Y+BOX_H/2,  5.1, R3Y-BOX_H/2),   # Split → RF
+    (5.1, R2Y+BOX_H/2,  8.2, R3Y-BOX_H/2),   # Split → LSTM
+    (2.0, R3Y+BOX_H/2,  5.1, R4Y-BOX_H/2),   # XGB → Signal
+    (5.1, R3Y+BOX_H/2,  5.1, R4Y-BOX_H/2),   # RF → Signal
+    (8.2, R3Y+BOX_H/2,  5.1, R4Y-BOX_H/2),   # LSTM → Signal
+    (5.1, R4Y+BOX_H/2,  5.1, R5Y-BOX_H/2),   # Signal → Backtest
+    (5.1, R5Y+BOX_H/2,  5.1, DASH_Y),         # Backtest → Dashboard
 ]
 
 def add_arrow(slide, x0, y0, x1, y1):
