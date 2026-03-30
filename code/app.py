@@ -96,7 +96,27 @@ ticker = st.sidebar.text_input("Crypto Symbol", value="BTC-USD",
     help="Yahoo Finance tickers: BTC-USD, ETH-USD, SOL-USD, BNB-USD")
 st.sidebar.caption("💡 Try: `BTC-USD` · `ETH-USD` · `SOL-USD`")
 
-start_date = st.sidebar.date_input("Fetch data starting from", value=date(2018, 1, 1))
+st.sidebar.markdown("### 📅 Training Data Range")
+start_date = st.sidebar.date_input(
+    "Download history starting from",
+    value=date(2018, 1, 1),
+    help="How far back to download price data. More years = more examples for the AI to learn from."
+)
+st.sidebar.caption(
+    f"📚 This controls the **training dataset size** — "
+    f"how many years of price history the AI studies before making predictions."
+)
+with st.sidebar.expander("❓ Why go back to 2015/2018?"):
+    st.markdown("""
+**More historical data = better trained AI.**
+
+- 2018 gives ~7 years of data including bull & bear markets
+- 2015 gives ~10 years — even more patterns to learn from
+- The AI needs thousands of examples to learn reliable patterns
+
+This is **not** the same as the LSTM window below.
+Think of it like: *the textbook you study from* vs *the paragraph you read before answering a question.*
+    """)
 
 model_choice = st.sidebar.selectbox(
     "Which AI model drives the strategy?",
@@ -111,12 +131,35 @@ with st.sidebar.expander("ℹ️ Model differences"):
 | **LSTM** | Analyst with memory | 🐢 Slower |
     """)
 
+st.sidebar.markdown("### 🧠 LSTM Sequence Length")
 window_size = st.sidebar.slider(
-    "AI Memory — how many past days to look back?",
-    min_value=5, max_value=30, value=10,
-    help="Only used by LSTM. 10 = AI studies last 10 days to predict tomorrow."
+    "LSTM: days of input per prediction (sequence length)",
+    min_value=1, max_value=60, value=10,
+    help="LSTM only. Each prediction reads this many consecutive days as input. NOT the same as training data range."
 )
-st.sidebar.caption(f"Currently **{window_size} days** of lookback.")
+st.sidebar.caption(
+    f"Currently **{window_size} days** per prediction input."
+)
+with st.sidebar.expander("❓ Why is this only 1–60 if data goes back to 2015?"):
+    st.markdown("""
+**These are two completely different things:**
+
+| Parameter | What it controls |
+|---|---|
+| **Training date range** | How many years of data the AI *learns from* |
+| **LSTM sequence length** | How many days the AI *reads at once* to make one prediction |
+
+**Analogy:**
+- You study 10 years of history books *(training data)*
+- When answering an exam question, you re-read the last 10 lines *(sequence length)*
+
+**Why 1–60 for sequence length?**
+- Research shows 5–20 days captures most short-term market momentum
+- Too long (>60) → model focuses on old patterns, misses recent trends
+- Too short (<5) → not enough context for the LSTM to find patterns
+- **10 days is the sweet spot** validated by the base research paper
+    """)
+
 st.sidebar.markdown("---")
 run_button = st.sidebar.button("🚀 Run Full Analysis", use_container_width=True)
 
